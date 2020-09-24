@@ -1,4 +1,7 @@
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -25,14 +28,13 @@ public class Main {
     //метод формировния первой подстроки и преобразования ее в массив
     public static char[] searchFirstSubstring(String s) throws Exception {
         String subs = null;
-        if (s.matches("(.*) (.*)")){
+        if (s.matches("(.*) (.*)")) {
             for (int i = 0; i < s.length(); i++) {
                 if (s.charAt(i) == ' ') {
                     subs = s.substring(0, i);
                 }
             }
-        }
-        else {
+        } else {
             throw new Exception("Некорректно введена строка!");
         }
         char[] sub1Array = new char[subs.length()];
@@ -61,8 +63,10 @@ public class Main {
     public static void russianOnly(char[] subs) throws Exception {
         boolean result = true;
         for (int i = 0; i < subs.length; i++) {
-            if (subs[i] < 1072 || subs[i] > 1103) {
-                result = false;
+            if (!(subs[i] == 1105)) {
+                if (subs[i] < 1072 || subs[i] > 1103) {
+                    result = false;
+                }
             }
         }
         if (result == false) {
@@ -81,10 +85,12 @@ public class Main {
     public static boolean possOfTransformation(char[] subs1, char[] subs2) {
         boolean result = false;
         //если есть повторяющиеся элементы
-        if (poieial(subs1)) {
-            result = arrWithRepeats(subs1, subs2); //проверяем возможности преобразовать все вхождения одной буквы в другую букву за один шаг.
-        } else {
-            result = true;
+        if (!isFullAlphabet(subs1)) {
+            if (poieial(subs1)) {
+                result = arrWithRepeats(subs1, subs2); //проверяем возможности преобразовать все вхождения одной буквы в другую букву за один шаг.
+            } else {
+                result = true;
+            }
         }
         return result;
     }
@@ -107,13 +113,33 @@ public class Main {
     //метод, проверяющий возможность преобразовать все вхождения одной буквы в другую букву за один шаг.
     public static boolean arrWithRepeats(char[] subs1, char[] subs2) {
         boolean result = true;
+        int b;
+        int y;
+        int s;
         //сначала преобразуем наши массивы
         int[] one = aaore(subs1);
+        //System.out.println(Arrays.toString(one));
         int[] two = aaore(subs2);
+        //System.out.println(Arrays.toString(two));
         //затем сравним поэлементно
         for (int i = 0; i < one.length; i++) {
-            if (!(one[i] == two[i])) {
-                result = false;
+            s = 0;
+            y = 0;
+            //если элемент масссива не нулевой(это значит у него есть как минимум одна пара)
+            if (!(one[i] == 0)) {
+                b = one[i];
+                for (int j = 0; j < one.length; j++) {
+                    //если находим этот элемент в массиве(найдем как минимум два раза)
+                    if (one[j] == b) {
+                        //суммируем все элементы с таким же индексом в массиве 2 и считаем кол-во суммирований
+                        s = s + two[j];
+                        y++;
+                    }
+                }
+                //если элементы были разными, то нацело они не делятся(или если они все были равны нулю)
+                if (!(s % y == 0) || s == 0) {
+                    result = false;
+                }
             }
         }
         return result;
@@ -137,7 +163,7 @@ public class Main {
                 if (subs[i] == subs[j] && !(subs[i] == b)) {
                     b = subs[i];
                     v++;
-                    //начинаем искать эл-ты, которые равны b и присваиваем этим элементам УНИКАЛЬНУЮ цифру v
+                    //начинаем искать эл-ты, которые равны b и присваиваем этим элементам v
                     for (int k = 0; k < subs.length; k++) {
                         if (subs[k] == b) {
                             arrayK1[k] = v; //формируем массив уникальных цифр вместо повторяющихся элементов
@@ -157,5 +183,25 @@ public class Main {
         } else {
             System.out.println(0);
         }
+    }
+
+    //метод, проверяющий наличие ВСЕХ букв русского аофавита в строке
+    public static boolean isFullAlphabet(char[] subs) {
+        Set<Integer> alphabet = new HashSet<>(33);
+        boolean result = false;
+        int cnt = 0;
+        for (char c : subs) {
+            int n = c - 'а';
+            if (n >= 0 && n < 32 || n == 33) {
+                if (alphabet.add(n)) {
+                    cnt += 1;
+                    if (cnt == 33) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }

@@ -10,8 +10,10 @@ public class Main {
         char[] subs2 = searchSecondSubstring(s); //определение второй подстроки
         russianOnly(subs1);//проверка условия, что подстрока состоит из букв а-я(нижний регистр)
         russianOnly(subs2);//проверка условия, что подстрока состоит из букв а-я(нижний регистр)
-        equalsLength(subs1, subs2);//проверка условия, что строки одинаковой длины
-        boolean b = possOfTransformation(subs1, subs2);//проверка возможности трансформации первой строки во вторую
+        boolean b = false;
+        if (equalsLength(subs1, subs2)) {
+            b = possOfTransformation(subs1, subs2);//проверка возможности трансформации первой строки во вторую
+        }
         executionResult(b);//вывод 0 или 1 в заисимости от результата
     }
 
@@ -21,8 +23,7 @@ public class Main {
     public static String read() {
         //System.out.println("Input:"); - отключил, чтобы пройти тест на сайте
         Scanner input = new Scanner(System.in);
-        String s = input.nextLine();
-        return s;
+        return input.nextLine();
     }
 
     //метод формировния первой подстроки и преобразования ее в массив
@@ -37,6 +38,7 @@ public class Main {
         } else {
             throw new Exception("Некорректно введена строка!");
         }
+        if (subs == null) throw new Exception("Некорректно введена подстрока");
         char[] sub1Array = new char[subs.length()];
         for (int j = 0; j < subs.length(); j++) {
             sub1Array[j] = subs.charAt(j);
@@ -45,13 +47,14 @@ public class Main {
     }
 
     //метод формировния второй подстроки и преобразования ее в массив
-    public static char[] searchSecondSubstring(String s) {
+    public static char[] searchSecondSubstring(String s) throws Exception {
         String subs = null;
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == ' ') {
-                subs = s.substring(i + 1, s.length());
+                subs = s.substring(i + 1);
             }
         }
+        if (subs == null) throw new Exception("Некорректно введена подстрока");
         char[] sub2Array = new char[subs.length()];
         for (int j = 0; j < subs.length(); j++) {
             sub2Array[j] = subs.charAt(j);
@@ -61,36 +64,39 @@ public class Main {
 
     //проверка условия, что буквы - русские
     public static void russianOnly(char[] subs) throws Exception {
-        boolean result = true;
-        for (int i = 0; i < subs.length; i++) {
-            if (!(subs[i] == 1105)) {
-                if (subs[i] < 1072 || subs[i] > 1103) {
-                    result = false;
+        for (char sub : subs) {
+            if (!(sub == 1105)) {
+                if (sub < 1072 || sub > 1103) {
+
+                    throw new Exception("Используйте только буквы русского алфавита в нижнем регистре!");
                 }
             }
-        }
-        if (result == false) {
-            throw new Exception("Используйте только буквы русского алфавита в нижнем регистре!");
         }
     }
 
     //метод проверяющий, что строки одной длины
-    public static void equalsLength(char[] subs1, char[] subs2) throws Exception {
+    public static boolean equalsLength(char[] subs1, char[] subs2) {
+        boolean result = true;
         if (!(subs1.length == subs2.length)) {
-            throw new Exception("Введены подстроки разной длины!");
+            result = false;
         }
+        return result;
     }
 
     //метод проверки возможности превращения первой подстроки во вторую
     public static boolean possOfTransformation(char[] subs1, char[] subs2) {
         boolean result = false;
-        //если есть повторяющиеся элементы
-        if (!isFullAlphabet(subs1)) {
+        //если подстроки неидентичны
+        if (!iidentity(subs1, subs2)) {
+            //если есть повторяющиеся элементы
             if (poieial(subs1)) {
                 result = arrWithRepeats(subs1, subs2); //проверяем возможности преобразовать все вхождения одной буквы в другую букву за один шаг.
             } else {
                 result = true;
             }
+        }
+        else if(iidentity(subs1,subs2)){
+            result=true;
         }
         return result;
     }
@@ -104,6 +110,7 @@ public class Main {
             for (int j = i + 1; j < subs.length; j++) {
                 if (subs[i] == subs[j]) {
                     b = true;
+                    break;
                 }
             }
         }
@@ -115,7 +122,6 @@ public class Main {
         boolean result = true;
         int b;
         int y;
-        int s;
         //сначала преобразуем наши массивы
         int[] one = aaore(subs1);
         //System.out.println(Arrays.toString(one));
@@ -123,22 +129,16 @@ public class Main {
         //System.out.println(Arrays.toString(two));
         //затем сравним поэлементно
         for (int i = 0; i < one.length; i++) {
-            s = 0;
-            y = 0;
             //если элемент масссива не нулевой(это значит у него есть как минимум одна пара)
             if (!(one[i] == 0)) {
                 b = one[i];
+                y = two[i];
                 for (int j = 0; j < one.length; j++) {
-                    //если находим этот элемент в массиве(найдем как минимум два раза)
-                    if (one[j] == b) {
-                        //суммируем все элементы с таким же индексом в массиве 2 и считаем кол-во суммирований
-                        s = s + two[j];
-                        y++;
+                    //в одном и том же месте двух массивов должны лежать идентичные символы(у каждого массива свой)
+                    if ((one[j] == b && !(two[j] == y)) || (one[j] == b && two[j] == 0)) {
+                        result = false;
+                        break;
                     }
-                }
-                //если элементы были разными, то нацело они не делятся(или если они все были равны нулю)
-                if (!(s % y == 0) || s == 0) {
-                    result = false;
                 }
             }
         }
@@ -153,9 +153,6 @@ public class Main {
         int v = 0;
         //создаем массив с нулями
         int[] arrayK1 = new int[subs.length];
-        for (int t = 0; t < arrayK1.length; t++) {
-            arrayK1[t] = 0;
-        }
         //пробегаем по массиву подстроки
         for (int i = 0; i < subs.length - 1; i++) {
             for (int j = i + 1; j < subs.length; j++) {
@@ -185,6 +182,7 @@ public class Main {
         }
     }
 
+    /*
     //метод, проверяющий наличие ВСЕХ букв русского аофавита в строке
     public static boolean isFullAlphabet(char[] subs) {
         Set<Integer> alphabet = new HashSet<>(33);
@@ -200,6 +198,21 @@ public class Main {
                         break;
                     }
                 }
+            }
+        }
+        return result;
+    }
+
+     */
+
+    //метод, проверяющий идентичность подстрок
+    public static boolean iidentity(char[] subs1, char[] subs2) {
+        boolean result = true;
+
+        for (int i = 0; i < subs1.length; i++) {
+            if (subs1[i] != subs2[i]) {
+                result = false;
+                break;
             }
         }
         return result;
